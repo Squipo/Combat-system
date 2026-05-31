@@ -15,8 +15,8 @@ local animations = {
 	parry = Instance.new("Animation"),
 	stun = Instance.new("Animation")
 }
-animations.parry.AnimationId = "rbxassetid://136840500235295"
-animations.stun.AnimationId = "rbxassetid://83738392468806"
+animations.parry.AnimationId = "rbxassetid://id"
+animations.stun.AnimationId = "rbxassetid://id"
 local combodata = {}
 local vfx = rs:WaitForChild("VFX")
 
