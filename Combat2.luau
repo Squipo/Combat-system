@@ -1,3 +1,4 @@
+--DISCORD:squipo_| ROBLOX:squipo_0
 --//SERVICES AND REFRENCES
 local player = game:GetService("Players")
 local dashevent = game:GetService("ReplicatedStorage").Events:WaitForChild("Dash")
