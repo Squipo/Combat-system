@@ -36,8 +36,8 @@ local function loadanimation(character)
 	return cache
 end
 --//STUN FUNCTION
---[[ Temporarily disables movement by zeroing WalkSpeed/JumpPower
- Uses state flag to prevent overlapping stun instances]]--
+--[[ Temporarily disables movement by setting WalkSpeed/JumpPower to 0.
+ Uses state flag to prevent overlapping stun instances]]
 local function stun(plr:Player,humanoid: Humanoid)
 	local stat = plr and players[plr] or players[humanoid.Parent]
 	if not stat then return end
