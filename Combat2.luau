@@ -310,14 +310,3 @@ end)
 block.OnServerEvent:Connect(function(plr,start)
 	players[plr].abilities:blocking(start)
 end)
-players[workspace.Characters.Blocking] = playercontroller.new(workspace.Characters.Blocking,loadanimation(workspace.Characters.Blocking)) 
-players[workspace.Characters.Attacking] = playercontroller.new(workspace.Characters.Attacking,loadanimation(workspace.Characters.Attacking)) 
-players[workspace.Characters.Uppercut] = playercontroller.new(workspace.Characters.Uppercut,loadanimation(workspace.Characters.Uppercut))
-players[workspace.Characters.Blocking].abilities:blocking(true)
-while task.wait(0.5) do
-players[workspace.Characters.Attacking].abilities:m1()
-players[workspace.Characters.Uppercut].abilities:uppercut()
-end
-
-
-
