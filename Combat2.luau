@@ -17,7 +17,7 @@ local animobj = {}
 --//CREATING CLASSES
 --[[Assigns each table as its own __index metamethod.
 This allows instances created with setmetatable() to inherit methods
-from their respective tables, providing class-like behavior in Luau.]]--
+from their respective tables, providing class-like behavior in Luau.]]
 states.__index = states
 abilities.__index = abilities
 playercontroller.__index = playercontroller
@@ -26,7 +26,7 @@ playercontroller.__index = playercontroller
 --//LOADING ANIMATIONS
 --[[ Loads and caches all animations for a character into a lookup table.
  Uses the Humanoid's Animator to ensure proper Roblox animation pipeline handling.
- Returns a table where keys are animation names and values are AnimationTracks.]]--
+ Returns a table where keys are animation names and values are AnimationTracks.]]
 local function loadanimation(character)
 	local animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
 	local cache = {}
@@ -59,7 +59,7 @@ local function stun(plr:Player,humanoid: Humanoid)
 end
 --// KNOCKBACK FUNCTION
 --[[ Applies a short-lived force to push a character away from an impact point.
-Uses LinearVelocity for immediate and controllable knockback.]]--
+Uses LinearVelocity for immediate and controllable knockback.]]
 local function knockback(hrp: Part, direction: Vector3,kb: number)
 	local attachment = Instance.new("Attachment")
 	attachment.Parent = hrp
@@ -77,7 +77,7 @@ Filters only characters inside workspace.Characters to reduce unnecessary checks
 Prevents multi-hit on the same humanoid using a local debounce table.
 Ignores self-hit and dead characters.
 Respects blocking state and cancels damage if target is blocking.
-Applies knockback, stun, and damage to valid targets.]]--
+Applies knockback, stun, and damage to valid targets.]]
 local function hitbox(hrp:Part,attacker:Humanoid,dmg:number, kb:number,direction: Vector3)
 	local plr = nil
 	local hithumanoids = {}
@@ -216,7 +216,7 @@ end
 The user is moved using LinearVelocity while their movement is temporarily
 disabled to prevent input conflicts during the attack animation.
 After a short wind-up, a hitbox is created to damage and knock back
-any valid targets before restoring the user's movement.]]--
+any valid targets before restoring the user's movement.]]
 function abilities:dashhit(humanoid:Humanoid)
 	if not self:canuseability() then return end
 	self.controller.state:setstate("attacking",true)
