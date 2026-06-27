@@ -17,7 +17,7 @@ local animobj = {}
 --//CREATING CLASSES
 --[[Assigns each table as its own __index metamethod.
 This allows instances created with setmetatable() to inherit methods
-from their respective tables, providing class-like behavior in Luau.]]
+from their respective tables]]
 states.__index = states
 abilities.__index = abilities
 playercontroller.__index = playercontroller
