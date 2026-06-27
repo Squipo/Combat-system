@@ -43,6 +43,8 @@ local function stun(plr:Player,humanoid: Humanoid)
 	if not stat then return end
 	local oldws = humanoid.WalkSpeed
 	local oldjp = humanoid.JumpPower
+	if oldws == 0 then oldws = 16 end
+	if oldjp == 0 then oldjp = 50 end
 	
 	task.spawn(function()
 	stat.abilities.anims["Stun"]:Play()
