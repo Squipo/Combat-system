@@ -312,7 +312,3 @@ end)
 playerserv.PlayerRemoving:Connect(function(removedplayer)
 	combodata[removedplayer] = nil
 end)
---clear the combo data when player leaves to avoid memory leaks
-players.PlayerRemoving:Connect(function(removedplayer)
-	combodata[removedplayer] = nil
-end)
