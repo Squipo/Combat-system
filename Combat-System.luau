@@ -224,8 +224,6 @@ event.OnServerEvent:Connect(function(player)
 	
 	local attackerhumanoid = attacker.Humanoid
 	
-	--formulas for the damage
-	
 	--orginally set the crit to false before changing it according to the chance calc
 	local crit = false
 	--use the chanceccalc funtion to decide whether the crit will happen or not
