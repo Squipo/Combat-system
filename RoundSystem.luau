@@ -3,16 +3,16 @@ local runservice = game:GetService("RunService")
 local playerservice = game:GetService("Players")
 local rs = game:GetService("ReplicatedStorage")
 
-local playercountupd = rs:WaitForChild("Playercountupdater")
-local countdownupd = rs:WaitForChild("Countdownupdater")
-local gamend = rs:WaitForChild("Gameendupdater") 
-local gamestart = rs:WaitForChild("Gamestartupdater") 
-local mapupdt = rs:WaitForChild("MapMenuUpdater")
-local mapshow = rs:WaitForChild("MapShower")
-local voteupd = rs:WaitForChild("Voteupd")
-local entergamebtnupd = rs:WaitForChild("EnterGameBtnUpdater")
-local template = rs:WaitForChild("Template")
-local mapfolder = rs:FindFirstChild("Maps")
+local playercountupd = rs:WaitForChild("Playercountupdater") -- store the remoteevent meant to update the player count ui in the declared variable
+local countdownupd = rs:WaitForChild("Countdownupdater") -- store the remoteevent meant to update the countdown ui in the declare variabel
+local gamend = rs:WaitForChild("Gameendupdater") -- store the remoteevent meant to change the gamestate ui to "game ended" in the declared variable
+local gamestart = rs:WaitForChild("Gamestartupdater") -- store the remoteevent meant to change the gamestate ui to "game started" in the declared variable
+local mapupdt = rs:WaitForChild("MapMenuUpdater") -- store the remote event meant to update the map voting menu's visibility in the declared variable 
+local mapshow = rs:WaitForChild("MapShower") -- store the remote event meant to show all the available maps in the map voting menu in the declared variable
+local voteupd = rs:WaitForChild("Voteupd") -- store the remote event meant to update the ui that shows mapvotes in the declared variable 
+local entergamebtnupd = rs:WaitForChild("EnterGameBtnUpdater") -- store the remoteevent meant to toggle between the exit or enter button in the declared variable
+local template = rs:WaitForChild("Template") -- store the template ui in the declared variable
+local mapfolder = rs:FindFirstChild("Maps") -- store the folder containing all the maps in the declared variable
 
 
 local playerstostart = 2
