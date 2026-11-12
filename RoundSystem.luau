@@ -3,16 +3,16 @@ local run_service = game:GetService("RunService")
 local player_service = game:GetService("Players")
 local replicated_storage = game:GetService("ReplicatedStorage")
 
-local player_count_updater = replicated_storage:WaitForChild("Playercountupdater")
-local count_down_updater = replicated_storage:WaitForChild("Countdownupdater")
-local game_end_ui_updater = replicated_storage:WaitForChild("Gameendupdater") 
-local game_start_ui_updater = replicated_storage:WaitForChild("Gamestartupdater") 
-local voting_menu_visibility_updater = replicated_storage:WaitForChild("MapMenuUpdater")
-local available_maps_shower = replicated_storage:WaitForChild("MapShower")
-local vote_count_ui_updater = replicated_storage:WaitForChild("Voteupd")
-local game_enter_button_toggler = replicated_storage:WaitForChild("EnterGameBtnUpdater")
+local player_count_updater = replicated_storage:WaitForChild("Playercountupdater")  -- store the remoteevent meant to update the player count ui in the declared variable
+local count_down_updater = replicated_storage:WaitForChild("Countdownupdater") -- store the remoteevent meant to update the countdown ui in the declare variabel
+local game_end_ui_updater = replicated_storage:WaitForChild("Gameendupdater") -- store the remoteevent meant to change the gamestate ui to "game ended" in the declared variable
+local game_start_ui_updater = replicated_storage:WaitForChild("Gamestartupdater") -- store the remoteevent meant to change the gamestate ui to "game started" in the declared variable
+local voting_menu_visibility_updater = replicated_storage:WaitForChild("MapMenuUpdater")  -- store the remote event meant to update the map voting menu's visibility in the declared variable 
+local available_maps_shower = replicated_storage:WaitForChild("MapShower")  -- store the remote event meant to show all the available maps in the map voting menu in the declared variable
+local vote_count_ui_updater = replicated_storage:WaitForChild("Voteupd") -- store the remote event meant to update the ui that shows mapvotes in the declared variable 
+local game_enter_button_toggler = replicated_storage:WaitForChild("EnterGameBtnUpdater") -- store the remoteevent meant to toggle between the exit or enter button in the declared variable
 
-local map_folder = replicated_storage:FindFirstChild("Maps")
+local map_folder = replicated_storage:FindFirstChild("Maps") -- store the folder containing all the maps in the declared variable
 
 
 local players_needed_to_start = 2
