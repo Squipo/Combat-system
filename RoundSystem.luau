@@ -1,3 +1,4 @@
+--DISCORD:squipo_| ROBLOX:squipo_0
 local run_service = game:GetService("RunService")
 local player_service = game:GetService("Players")
 local replicated_storage = game:GetService("ReplicatedStorage")
