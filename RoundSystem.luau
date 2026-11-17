@@ -313,6 +313,3 @@ local function round_manager()
 	end
 end
 run_service.Heartbeat:Connect(round_manager) -- continuously look for changes and run the round cycle accordingly
-
---[[to do list:
-continue optimizing from round manager]]
