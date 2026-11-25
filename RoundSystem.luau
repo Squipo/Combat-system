@@ -119,20 +119,19 @@ player_enter_queue_event.OnServerEvent:Connect(player_management) -- when the en
 
 
 
-local countdown_lock -- keep a variable at top that will be controlled by the latter functions
 local function teleport(player:Player,cframe:CFrame)
 	local character = player.Character -- store the character in a separate variable for easier debugging
 	local humanoid_root_part = character:FindFirstChild("HumanoidRootPart") -- store the humanoidrootpart in a variable so that it can be nil checked
 	if not humanoid_root_part then return end -- nil check the humanoid root part to avoid runtime error
 	humanoid_root_part.CFrame = cframe -- move the player's hhumanoid root part's position to the passed cframe so they can be teleported properly and can participate in the game properly 
 end
-local function teleport_back(players_table)
+local function teleport_back()
 	if players_table == nil then return end -- in the case of a solo match, the players table might be empty, nil check it to avoid a runtime error
 	for player in players_table do
 		teleport(player,CFrame.new(176, 318.881, -4)) -- teleport every player in the table out of the map and into the lobby so the map can be easily reset 
 	end
 end
-local function teleport_in_map(players_table)
+local function teleport_in_map()
 	for player in players_table do
 		teleport(player,CFrame.new(0, 2, 0)) -- teleport every player in the table into the map so they can participate in the map
 	end
@@ -152,77 +151,75 @@ local function choose_map()
 end
 local function clone_map()
 	local map_name = choose_map() -- use the choose map function to get the map with the highest vote and store it in a separate variable for easier debugging
-	local map = maps_folder:FindFirstChild(map_name):Clone() -- find the chosen map in the maps folder, clone and store it in a variable so the clone can be parented and named
-	map.Parent = game.Workspace
-	map.Name = "Map"
+	local map = maps_folder:FindFirstChild(map_name):Clone() -- run the choosemap functio to find the map with highest votes in the maps folder, clone and store it in a variable so the clone can be parented, named and positioned
+	map.CFrame = CFrame.new(0,-8,0) -- change the cloned maps position to have a consisten spawn postition
+	map.Parent = game.Workspace.Activemap -- parent the map in the workplace so it can appear in the actual game and players can play the game in the map put the map in the folder as well in the case of a player having the same name as the map
+	map.Name = "Map" -- change the map's name to a simple "map" so it can be easily deleted later
 end
 local function destroy_map()
-	local map = workspace:FindFirstChild("Map")
-	map:Destroy()
+	local map = workspace.Activemap:FindFirstChild("Map") -- store the map instance in a variable so it can be nil checked
+	if not map then return end -- nil check the map to avoid runtime error
+	map:Destroy() -- destroy the map so it can be reset
 end
 
 
+local countdown_lock -- keep a variable at top that will be controlled by the latter functions
 local function countdown()
-	countdown_lock = false
+	countdown_lock = false -- as the only purpose of this variable is to stop the countdown abruptly and know the countdown was abruptly stopped, unlock the countdown whenever the countdown needs to be started
 	for count = 10,1,-1 do
-		if countdown_lock then return end
-		game_values:SetAttribute("Countdown",count)
-		task.wait(1)
+		if countdown_lock then return end -- if the countdown lock is true quit countdown abdruptly so the ui wont be updated
+		game_values:SetAttribute("Countdown",count) -- change the countdown attribute to the current count so the ui can be updated
+		task.wait(1) -- wait one second between each iteration 
 	end
-	game_values:SetAttribute("Countdown",0)
 end
 
 
 local function countdown_pause()
-	game_values:SetAttribute("Gamestate","Ended")
-	countdown_lock = true
-	task.delay(1,function()
-		countdown_lock = false
-	end)
-	game_values:SetAttribute("Countdown",0)
-	reset_all_player_data()
+	game_values:SetAttribute("Gamestate","Ended") -- set the gamestate to ended so the necessary UIs can be shown 
+	countdown_lock = true -- set the variable to true to stop the countdown and prevent the game to get past the countdown stage
+	reset_all_player_data() -- since the countdown/voting stage was stopped abruptly remove the votes made by them and reset their voting states so they can vote again if the sufficient players are there
 end
 local function game_start()
-	map_show_event:FireAllClients()
-	game_values:SetAttribute("Gamestate","Countdown")
-	countdown()
-	if countdown_lock == true then return end
-	clone_map()
-	teleport_in_map(players_table)
-	game_values:SetAttribute("Gamestate","Started")
+	game_values:SetAttribute("Gamestate","Countdown") -- set the gamestate attribute to countdown so the neccessary UIs can be shown
+	map_show_event:FireAllClients() -- fire the remote event to show the available maps, this is only done once each countdown event because the players must strictly be shown the same voting options
+	countdown() -- start the count down to let players know how long is the voting period
+	if countdown_lock == true then return end -- if the countdown was stopepd abruptly dont go past the countdown/voting stage since there isnt enough players for the game
+	clone_map() -- find the map with the highest votes and clone it into workspace under a folder so the players can play in it
+	teleport_in_map() -- teleport the players in map 
+	game_values:SetAttribute("Gamestate","Started") -- set the gamestate attribute to started so the neccessary UIs can be shown
 end
 local function game_end()
-	teleport_back(players_table)
-	destroy_map()
-	reset_all_player_data()
-	player_all_removing()
-	game_values:SetAttribute("Gamestate","Ended")
+	teleport_back() -- teleport the players back to lobby so the map can be reset
+	destroy_map() -- destroy the map and reset it
+	reset_all_player_data() -- reset the player's data so they can vote and participate in the next round
+	player_all_removing() -- remove all players from the table so the player can decide whether to participate in the next round or not
+	game_values:SetAttribute("Gamestate","Ended") -- set the gamestate to ended so the necessary UIs can be shown 
 
 end
 
 
 local function can_start()
-	local is_game_ended = game_values:GetAttribute("Gamestate") == "Ended"
-	local is_enough_players = game_values:GetAttribute("Players") >= players_needed_to_start
-	return is_game_ended and is_enough_players
+	local is_game_ended = game_values:GetAttribute("Gamestate") == "Ended" -- check if gamestate is ended and store it in a variable for easier debugging
+	local is_enough_players = game_values:GetAttribute("Players") >= players_needed_to_start -- check if there is enough players and store it in a variable for easier debugging
+	return is_game_ended and is_enough_players -- return the two variables because if both are true then there is sufficient players and the game has ended so the voting for the next match can begun 
 end
 local function should_pause()
-	local is_game_in_countdown = game_values:GetAttribute("Gamestate") == "Countdown"
-	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start
-	return is_game_in_countdown and is_not_enough_players
+	local is_game_in_countdown = game_values:GetAttribute("Gamestate") == "Countdown" -- check if gamestate is countdown and store it in a variable for easier debugging
+	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start --  check if there is not enough players and store it in a variable for easier debugging
+	return is_game_in_countdown and is_not_enough_players --  return the two variables because if both are true then there isnt sufficient players but the game has ended so the voting for the next match needs to be paused 
 end
 local function can_end()
-	local is_game_started = game_values:GetAttribute("Gamestate") == "Started"
-	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start
-	return is_game_started and is_not_enough_players
+	local is_game_started = game_values:GetAttribute("Gamestate") == "Started" -- check if gamestate is started and store it in a variable for easier debugging
+	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start --  check if there is not enough players and store it in a variable for easier debugging
+	return is_game_started and is_not_enough_players --return the two variables because if both are true then there isnt sufficient players but the game has started so the game can be ended
 end
 local function round_state_management()
 	if can_start() then
-		game_start()
+		game_start() -- if the sufficient criteras are met then this function is ran which starts the countdown, clones the map and teleports the players
 	elseif should_pause() then
-		countdown_pause()
+		countdown_pause() -- if the sufficient criteras are met then this function is ran which stops the countdown
 	elseif can_end() then
-		game_end()
+		game_end() -- if the sufficient criterias are met then this function is ran which resets the player datas, resets the map and remove the players from the table
 	end
 end
 game_values:GetAttributeChangedSignal("Players"):Connect(round_state_management)
