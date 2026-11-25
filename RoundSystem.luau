@@ -251,3 +251,4 @@ local function on_player_added(player:Player)
 	end)
 end
 player_service.PlayerAdded:Connect(on_player_added)
+player_service.PlayerRemoving:Connect(on_dead)
