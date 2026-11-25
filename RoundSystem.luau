@@ -44,24 +44,23 @@ end
 local function reset_player_vote_data(player:Player)
 	player:SetAttribute("voted",false) -- as this function is called whenever the game is ready to enter its voting stage, set the player's voted attribute to false so they can vote again
 end
-local function increase_vote(map_name)
-	maps[map_name] += 1
-	maps_folder:FindFirstChild(map_name):SetAttribute("votes",maps[map_name])
+local function increase_vote(map_name:string)
+	maps[map_name] += 1 -- increase the vote of the map in the maps table so it can be used by the mapchoose function later
+	maps_folder:FindFirstChild(map_name):SetAttribute("votes",maps[map_name]) -- increase the votes attribute of the map in the maps folder so that the ui can be updated
 end
 local function decrease_vote(player:Player)
-	if player:GetAttribute("voted")  == false then return end
-	local player_voted_map = player:GetAttribute("voted_map")
-	maps[player:GetAttribute("voted_map")] -= 1
-	maps_folder:FindFirstChild(player_voted_map):SetAttribute("votes",maps[player_voted_map])
-
+	if player:GetAttribute("voted")  == false then return end -- check if the user has voted or not before decreasing the vote. so the vote count wont decrease everytime the player removes their queue leading to a game break
+	local player_voted_map = player:GetAttribute("voted_map") -- store the player's voted map in a variable so it can be easily accessed and increase readaibilty
+	maps[player_voted_map] -= 1 -- decrease the vote of the map in the maps table so it can be used bt rhe mapchoose function later
+	maps_folder:FindFirstChild(player_voted_map):SetAttribute("votes",maps[player_voted_map]) -- decrease the map's "votes" attribute in the maps folder to update ui
 end
 local function register_vote(player:Player,map_name:string)
-	if check_humanoid_dead(player) then return end
-	if player:GetAttribute("voted") then return end
-	update_player_vote_data(player,map_name)
-	increase_vote(map_name)
+	if player:GetAttribute("queued") ~= true then return end -- as the player gets remove from queue after dying, quit the function if the player isnt queued so votes cant go past the amount of players in the queue
+	if player:GetAttribute("voted") then return end -- if the player has already voted then quit the function to accurately show how many people voted for a map
+	update_player_vote_data(player,map_name) -- update the player's atttribute so they can't vote unfairly
+	increase_vote(map_name) -- increase the map's vote so the mapchooser function can properly choose the map with the highest votes
 end
-vote_event.OnServerEvent:Connect(register_vote)
+vote_event.OnServerEvent:Connect(register_vote) -- each time the player presses the vote button run the above funtion to register the vote properly
 
 
 
@@ -69,26 +68,26 @@ vote_event.OnServerEvent:Connect(register_vote)
 
 local players_table ={}
 local function player_adding(player:Player)
-	if player:GetAttribute("queued") then return end
-	players_table[player] = true
-	game_values:SetAttribute("Players",game_values:GetAttribute("Players")+1)
-	player:SetAttribute("queued",true)
+	if player:GetAttribute("queued") then return end -- as the player has their queued attribute to true when being added, quit the function if the player is already queued to avoid the same player being queued and telported multiple times
+	players_table[player] = true -- put the player in the players table so they can be safely teleported in and out of the map
+	game_values:SetAttribute("Players",game_values:GetAttribute("Players")+1) -- increase the players attribute so the ui can be updated
+	player:SetAttribute("queued",true) -- set the player's queued attribute to true so the mapvoting ui can be showed to them once the countdown start
 end
 local function player_removing(player:Player)
-	if player:GetAttribute("queued") == false then return end
-	players_table[player] = nil
-	game_values:SetAttribute("Players",game_values:GetAttribute("Players")-1)
-	player:SetAttribute("queued",false)
+	if player:GetAttribute("queued") == false then return end -- as the player has their queued attribute to false when being removed, quit the function if the player hasn't even queued yet to avoid causing an error 
+	players_table[player] = nil -- remove the player from the players table so they wont be teleported in the map even if they dont wanna participate in the next match
+	game_values:SetAttribute("Players",game_values:GetAttribute("Players")-1) -- decrease the players attribute so the ui can be updated
+	player:SetAttribute("queued",false) -- set the player's queued attribute to false so the mapvoting ui be hid from them
 end
 local function player_all_removing()
-	for player in players_table do
+	for player in players_table do -- remove every player from the players table after the game ends so they can choose to or not to participate in the next round
 		player_removing(player)
 	end
 end
 local function reset_all_player_data()
 	for player in players_table do
-		decrease_vote(player)
-		reset_player_vote_data(player)
+		decrease_vote(player) -- decrease the vote of every player in the table so the votes will be reset and the players can vote for another map 
+		reset_player_vote_data(player) -- reset the data of every player in the table so 
 	end
 end	
 local function button_cooldown(player:Player)
@@ -238,7 +237,6 @@ local function on_dead(player:Player)
 	decrease_vote(player)
 	reset_attributes(player)
 end
-
 local function on_character_added(character:Model,player:Player)
 	local humanoid = character:WaitForChild("Humanoid")
 	humanoid.Died:Connect(function()
