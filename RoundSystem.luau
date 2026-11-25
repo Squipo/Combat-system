@@ -53,7 +53,7 @@ local function decrease_vote(player:Player)
 	local player_voted_map = player:GetAttribute("voted_map")
 	maps[player:GetAttribute("voted_map")] -= 1
 	maps_folder:FindFirstChild(player_voted_map):SetAttribute("votes",maps[player_voted_map])
-	
+
 end
 local function register_vote(player:Player,map_name:string)
 	if check_humanoid_dead(player) then return end
@@ -194,14 +194,31 @@ local function game_end()
 	reset_all_player_data()
 	player_all_removing()
 	game_values:SetAttribute("Gamestate","Ended")
-	
+
+end
+
+
+local function can_start()
+	local is_game_ended = game_values:GetAttribute("Gamestate") == "Ended"
+	local is_enough_players = game_values:GetAttribute("Players") >= players_needed_to_start
+	return is_game_ended and is_enough_players
+end
+local function should_pause()
+	local is_game_in_countdown = game_values:GetAttribute("Gamestate") == "Countdown"
+	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start
+	return is_game_in_countdown and is_not_enough_players
+end
+local function can_end()
+	local is_game_started = game_values:GetAttribute("Gamestate") == "Started"
+	local is_not_enough_players = game_values:GetAttribute("Players") < players_needed_to_start
+	return is_game_started and is_not_enough_players
 end
 local function round_state_management()
-	if game_values:GetAttribute("Gamestate") == "Ended" and game_values:GetAttribute("Players") >= players_needed_to_start then
+	if can_start() then
 		game_start()
-	elseif game_values:GetAttribute("Gamestate") == "Countdown" and game_values:GetAttribute("Players") < players_needed_to_start then
+	elseif should_pause() then
 		countdown_pause()
-	elseif game_values:GetAttribute("Gamestate") == "Started" and game_values:GetAttribute("Players") < players_needed_to_start then
+	elseif can_end() then
 		game_end()
 	end
 end
