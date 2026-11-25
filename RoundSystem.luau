@@ -66,7 +66,7 @@ vote_event.OnServerEvent:Connect(register_vote) -- each time the player presses 
 
 
 
-local players_table ={}
+local players_table ={} -- used a players table to keep track of queued plaeyrs for efficiently  iterating through queued players
 local function player_adding(player:Player)
 	if player:GetAttribute("queued") then return end -- as the player has their queued attribute to true when being added, quit the function if the player is already queued to avoid the same player being queued and telported multiple times
 	players_table[player] = true -- put the player in the players table so they can be safely teleported in and out of the map
@@ -87,68 +87,72 @@ end
 local function reset_all_player_data()
 	for player in players_table do
 		decrease_vote(player) -- decrease the vote of every player in the table so the votes will be reset and the players can vote for another map 
-		reset_player_vote_data(player) -- reset the data of every player in the table so 
+		reset_player_vote_data(player) -- reset the data of every player in the table so the players can vote again in the next round
 	end
 end	
 local function button_cooldown(player:Player)
-	if player:GetAttribute("debounce") == true then return end
-	player:SetAttribute("debounce",true)
-	task.delay(1,function()
-		player:SetAttribute("debounce",false)
+	if player:GetAttribute("debounce") == true then return end -- if the player's button is in cooldown quit the function so the player wont be placed in multiple cooldowns simultaneously and increase their wait time
+	player:SetAttribute("debounce",true) -- place the player in cooldown  for the button so they wont glitch the countdown
+	task.delay(1,function() -- used task delay to avoid pausing the thread
+		player:SetAttribute("debounce",false) -- after one second since the player used the button remove their cooldown so they may wish to leave queue or enter the queue again
 	end)
 end
+local function can_player_not_use_button(player:Player)
+	return check_humanoid_dead(player) or player:GetAttribute("debounce") -- check if the player is dead so they wont be added to the players table while they are dead because once they respawn their data gets reset and they can vote again. 
+	-- this will prevent them from  voting twice in the same voting stage
+end
 local function player_management(player:Player,entering:boolean)
-	if check_humanoid_dead(player) or player:GetAttribute("debounce") then return end
-	if entering then
-		player_adding(player)
-		button_cooldown(player)
+	if can_player_not_use_button(player) then return end -- check if the player can use the button or not for the reasons stated above
+	if entering then -- as the same remote event is used for entering and exiting the queue, check if the event was sent by the enter button or not
+		player_adding(player) -- add the player in the table so they cant be teleported once the game starts
+		button_cooldown(player) -- put the player on cooldown for using the button so they wont glitch the countdown
 	else
-		decrease_vote(player) 
-		reset_player_vote_data(player) 
-		player_removing(player)
-		button_cooldown(player)
+		decrease_vote(player) -- if the player wants to exit then decrease the vote so the total votes wont go past total queued players
+		reset_player_vote_data(player) -- reset the players data so they can vote again if they choose to enter the queue
+		player_removing(player) -- as they dont want to participate in the next round, rmeove the player from the table so they wont be teleported in the map
+		button_cooldown(player) -- put the player on cooldown for using the button so they wont gliych the countdown
 	end
 end
-player_enter_queue_event.OnServerEvent:Connect(player_management)
+player_enter_queue_event.OnServerEvent:Connect(player_management) -- when the enter or exit button is pressed and the remote event is fired call the player management function 
 
 
 
 
 
-local countdown_lock = true
+local countdown_lock -- keep a variable at top that will be controlled by the latter functions
 local function teleport(player:Player,cframe:CFrame)
-	local character = player.Character
-	local hrp = character:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	hrp.CFrame = cframe
+	local character = player.Character -- store the character in a separate variable for easier debugging
+	local humanoid_root_part = character:FindFirstChild("HumanoidRootPart") -- store the humanoidrootpart in a variable so that it can be nil checked
+	if not humanoid_root_part then return end -- nil check the humanoid root part to avoid runtime error
+	humanoid_root_part.CFrame = cframe -- move the player's hhumanoid root part's position to the passed cframe so they can be teleported properly and can participate in the game properly 
 end
 local function teleport_back(players_table)
-	if players_table == nil then return end
+	if players_table == nil then return end -- in the case of a solo match, the players table might be empty, nil check it to avoid a runtime error
 	for player in players_table do
-		teleport(player,CFrame.new(176, 318.881, -4))
+		teleport(player,CFrame.new(176, 318.881, -4)) -- teleport every player in the table out of the map and into the lobby so the map can be easily reset 
 	end
 end
 local function teleport_in_map(players_table)
 	for player in players_table do
-		teleport(player,CFrame.new(0, 2, 0))
+		teleport(player,CFrame.new(0, 2, 0)) -- teleport every player in the table into the map so they can participate in the map
 	end
 end
 
 
 local function choose_map()
-	local chosen_map = nil
-	local highest_vote = -math.huge
+	local chosen_map -- put a nil variable on the very top of the function so it can be changed by the below code
+	local highest_vote = -1 -- set the initial highest vote to a negative value so if none of the map are voted a random map can be selected 
 	for map,votes in maps do
-		if votes > highest_vote then
-			highest_vote = votes
-			chosen_map = map
+		if votes > highest_vote then 
+			highest_vote = votes -- if the map's vote is higher than the previous map's vote then change the value to the current maps vote so if the next iterated map has more votes it will be set as the chosen map 
+			chosen_map = map -- if the maps vote is higher than the previous map's vote or the currently recorded highest vote then select that map as the chosen map ensuring that the map with the highest vote will remain in the variable
 		end
 	end
-	return chosen_map
+	return chosen_map -- after the loop ends and all the maps are iterated only the map with the highest vote will remain in the variable, so return it
 end
 local function clone_map()
-	local map_name = choose_map()
-	local map = maps_folder:FindFirstChild(map_name):Clone()
+	local map_name = choose_map() -- use the choose map function to get the map with the highest vote and store it in a separate variable for easier debugging
+	local map = maps_folder:FindFirstChild(map_name):Clone() -- find the chosen map in the maps folder, clone and store it in a variable so the clone can be parented and named
 	map.Parent = game.Workspace
 	map.Name = "Map"
 end
@@ -172,7 +176,7 @@ end
 local function countdown_pause()
 	game_values:SetAttribute("Gamestate","Ended")
 	countdown_lock = true
-	task.delay(2,function()
+	task.delay(1,function()
 		countdown_lock = false
 	end)
 	game_values:SetAttribute("Countdown",0)
