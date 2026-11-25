@@ -23,14 +23,14 @@ local maps = {
 
 
 local function check_humanoid_dead(player:Player)
-	local character = player.Character
-	if not character then return end
-	local humanoid = character:FindFirstChild("Humanoid")
-	if not humanoid then return end
-	if humanoid:GetState() == Enum.HumanoidStateType.Dead then
-		return true
+	local character = player.Character -- store the character in a variable so it can be nil checked 
+	if not character then return end -- nil check the variable above to avoid runtime error
+	local humanoid = character:FindFirstChild("Humanoid") -- store the humanoid in a variable so it can be nil checked
+	if not humanoid then return end -- nil check the humanoid to avoid runtime error
+	if humanoid:GetState() == Enum.HumanoidStateType.Dead then -- confirm that the humanoid is dead by checking its state
+		return true -- as this function is used to confirm the player's character is dead, return true if its dead 
 	else
-		return false
+		return false  -- as this function is used to confirm the player's character is dead, return false if its not dead 
 	end
 end
 
@@ -38,13 +38,11 @@ end
 
 
 local function update_player_vote_data(player:Player,map_name:string)
-	player:SetAttribute("voted",true)
-	player:SetAttribute("voted_map",map_name)
+	player:SetAttribute("voted",true) -- set the player's "voted" attribute to true so the player cant vote again
+	player:SetAttribute("voted_map",map_name) -- save the player's voted map in an attribute of the player so it can be used to remove the vote from the map later
 end
 local function reset_player_vote_data(player:Player)
-	if player:GetAttribute("voted")  == false then return end
-	player:SetAttribute("voted",false)
-	player:SetAttribute("voted_map",nil)
+	player:SetAttribute("voted",false) -- as this function is called whenever the game is ready to enter its voting stage, set the player's voted attribute to false so they can vote again
 end
 local function increase_vote(map_name)
 	maps[map_name] += 1
@@ -216,7 +214,6 @@ game_values:GetAttributeChangedSignal("Players"):Connect(round_state_management)
 local function reset_attributes(player:Player)
 	player:SetAttribute("debounce",false)
 	player:SetAttribute("voted",false)
-	player:SetAttribute("voted_map",nil)
 	player:SetAttribute("queued",false)
 end
 local function on_dead(player:Player)
