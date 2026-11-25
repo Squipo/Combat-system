@@ -77,7 +77,7 @@ local function player_removing(player:Player)
 	if player:GetAttribute("queued") == false then return end -- as the player has their queued attribute to false when being removed, quit the function if the player hasn't even queued yet to avoid causing an error 
 	players_table[player] = nil -- remove the player from the players table so they wont be teleported in the map even if they dont wanna participate in the next match
 	game_values:SetAttribute("Players",game_values:GetAttribute("Players")-1) -- decrease the players attribute so the ui can be updated
-	player:SetAttribute("queued",false) -- set the player's queued attribute to false so the mapvoting ui be hid from them
+	player:SetAttribute("queued",false) -- set the player's queued attribute to false so the mapvoting ui will be hid from them
 end
 local function player_all_removing()
 	for player in players_table do -- remove every player from the players table after the game ends so they can choose to or not to participate in the next round
@@ -214,41 +214,40 @@ local function can_end()
 	return is_game_started and is_not_enough_players --return the two variables because if both are true then there isnt sufficient players but the game has started so the game can be ended
 end
 local function round_state_management()
-	if can_start() then
+	if can_start() then -- as only one map can exist at a time the can start function checks if the game has ended to avoid cloning maps that overlap and for having a proper round system 
 		game_start() -- if the sufficient criteras are met then this function is ran which starts the countdown, clones the map and teleports the players
-	elseif should_pause() then
+	elseif should_pause() then -- as the function below is for pausing the cooldown and resetting player data, whether the countdown is happening or not is checked first
 		countdown_pause() -- if the sufficient criteras are met then this function is ran which stops the countdown
-	elseif can_end() then
+	elseif can_end() then -- as the function below ends the game and resets everything, whether the game has begun or not is checked first before calling it
 		game_end() -- if the sufficient criterias are met then this function is ran which resets the player datas, resets the map and remove the players from the table
 	end
 end
-game_values:GetAttributeChangedSignal("Players"):Connect(round_state_management)
+game_values:GetAttributeChangedSignal("Players"):Connect(round_state_management) --whenever the amount of player changes the function above gets ran to change the gamestate according to the player count and manage the overall rounds
 
 
 
 
 
 local function reset_attributes(player:Player)
-	player:SetAttribute("debounce",false)
-	player:SetAttribute("voted",false)
-	player:SetAttribute("queued",false)
+	player:SetAttribute("debounce",false) -- as this function gets called whenever the player dies or newly joins the debounce needs to be set to false (or be created) so they can use the buttons (because they are kicked out of queue when they die)
+	player:SetAttribute("voted",false) -- as this function gets called whenever the player dies or newly joins the voted attribute for the player needs to be set to false(or be created) so they can vote again (because their vote gets removed once they die)
+	player:SetAttribute("queued",false) -- as this function gets called whenever the player dies or newly join the queued needs to be set to false (or be created)so they can join the queue ( because they are kicked out of queue after dying)
 end
 local function on_dead(player:Player)
-	player_removing(player)
-	decrease_vote(player)
-	reset_attributes(player)
+	player_removing(player) --when a player dies remove them from the player table so a dead player won't be teleporting thus causing the players to be miscounted once they respawn
+	decrease_vote(player) -- as they are removed from the players table, decrease their vote to avoid the total votes going past the total players
+	reset_attributes(player)-- as they have  their vote removed and they are removed from the players table, reset the attributes so they will be able to vote or participate in the next match again 
 end
 local function on_character_added(character:Model,player:Player)
-	local humanoid = character:WaitForChild("Humanoid")
+	local humanoid = character:WaitForChild("Humanoid") -- store the player's humanoid in a variable for easier debugging 
 	humanoid.Died:Connect(function()
-		on_dead(player)
+		on_dead(player) -- connect the function to a player's death, so whenever a player dies they get removed from the table, their vote gets removed and their attributes get removed for reasons stated above
 	end)
 end
 local function on_player_added(player:Player)
-	reset_attributes(player)
+	reset_attributes(player) -- when a new player joins, set all the attributes used in the script so they will be able to use all the ui functions again(map_name isn't set there as the map_name is never checked except when decreasing vote, but in that case the existence of the map_name is confirmed through the voted attribute
 	player.CharacterAdded:Connect(function(character:Model)
-		on_character_added(character,player)
+		on_character_added(character,player)-- used character added to get the character of the newly joined player
 	end)
 end
 player_service.PlayerAdded:Connect(on_player_added)
-player_service.PlayerRemoving:Connect(on_dead)
