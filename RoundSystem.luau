@@ -195,7 +195,6 @@ local function game_end()
 	destroy_map()
 	reset_all_player_data()
 	player_all_removing()
-	print("gamestate changed to stop ui from changing")
 	game_values:SetAttribute("Gamestate","Ended")
 	
 end
