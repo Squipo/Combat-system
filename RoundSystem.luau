@@ -251,4 +251,4 @@ local function on_player_added(player:Player)
 	end)
 end
 player_service.PlayerAdded:Connect(on_player_added)
-player_service.PlayerRemoving:Connect(on_dead)
+player_service.PlayerRemoving:Connect(on_dead) -- in the case of a player quitting the game in the middle of a match, make sure to remove them from the table as they are literally not there along with their vote to prevent total votes being more than total players
