@@ -245,7 +245,7 @@ local function on_character_added(character:Model,player:Player)
 	end)
 end
 local function on_player_added(player:Player)
-	reset_attributes(player) -- when a new player joins, set all the attributes used in the script so they will be able to use all the ui functions again(map_name isn't set there as the map_name is never checked except when decreasing vote, but in that case the existence of the map_name is confirmed through the voted attribute
+	reset_attributes(player) -- when a new player joins, set all the attributes used in the script so they will be able to use all the ui functions again(map_name isn't set there as the map_name is never checked except when decreasing vote, but in that case the existence of the map_name is confirmed through the voted attribute)
 	player.CharacterAdded:Connect(function(character:Model)
 		on_character_added(character,player)-- used character added to get the character of the newly joined player
 	end)
